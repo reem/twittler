@@ -41,8 +41,9 @@
         };
 
         var archive = function (array_to_archive) {
-            streams.archive.push.apply(streams.archive,
-                    streams.home.splice(0, streams.home.length));
+            streams.home.splice(0, streams.home.length).forEach(function (tweet) {
+                    streams.archive.push(tweet);
+            });
         };
 
         var setup = function () {
