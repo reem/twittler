@@ -12,6 +12,12 @@
             box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
         }
 
+        .author {
+            margin: 0;
+            padding: 0;
+            color: blue;
+        }
+
         body {
             background-color: #eee;
             color: #666666;
@@ -20,8 +26,15 @@
   </head>
   <body>
     <script>
+        var activeTweetStream = streams.home;
+
+        var switchStream = function (newStream) {
+            $('#tweets').html('');
+            activeTweetStream = newStream;
+        };
+
         var refreshTweets = function () {
-            displayTweets(getNewTweets());
+            displayTweets(getNewTweets(activeTweetStream));
         };
 
         var displayTweets = function (tweets) {
@@ -29,31 +42,37 @@
         };
 
         var displayTweet = function (tweet) {
-            $('<div>').text('@' + tweet.user + ': ' + tweet.message)
-                .addClass('tweet')
-                .prependTo($('body'));
-        };
+            var $tweet = $('<div>').addClass('tweet');
 
-        var getNewTweets = function () {
-            var result = streams.home.slice();
-            archive(streams.home); // Clear tweet stream, but don't delete old tweets.
-            return result;
-        };
-
-        var archive = function (array_to_archive) {
-            streams.home.splice(0, streams.home.length).forEach(function (tweet) {
-                    streams.archive.push(tweet);
+            var $author = $('<a>').text('@' + tweet.user).addClass('author');
+            $author.click(function () {
+                switchStream(streams.users[tweet.user]);
             });
+
+            var $tweettext = $('<span>').text(': ' + tweet.message + ' -- ' +
+                    tweet.created_at);
+
+            $tweet.append($author);
+            $tweet.append($tweettext);
+            $tweet.prependTo($('#tweets'));
+        };
+
+        var getNewTweets = function (tweetStream) {
+            var result = tweetStream.slice();
+            tweetStream.length = 0;
+            return result;
         };
 
         var setup = function () {
             streams.archive = [];
+            refreshTweets();
+            $('body').prepend($('<div>').attr('id', 'tweets'));
         };
 
         $(document).ready(function () {
             $('body').html('');
-            setInterval(refreshTweets, 500);
             setup();
+            setInterval(refreshTweets, 2000);
         });
     </script>
   </body>
