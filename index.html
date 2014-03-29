@@ -3,22 +3,57 @@
   <head>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+    <style type="text/css" media="all">
+        .tweet {
+            background-color: #fff;
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            background-color: #eee;
+            color: #666666;
+        }
+    </style>
   </head>
   <body>
     <script>
-      $(document).ready(function(){
-          var $body = $('body');
-          $body.html('');
+        var refreshTweets = function () {
+            displayTweets(getNewTweets());
+        };
 
-          var index = streams.home.length - 1;
-          while(index >= 0){
-              var tweet = streams.home[index];
-              var $tweet = $('<div>');
-              $tweet.text('@' + tweet.user + ': ' + tweet.message);
-              $tweet.appendTo($body);
-              index -= 1;
-          }
-      });
+        var displayTweets = function (tweets) {
+            tweets.forEach(displayTweet);
+        };
+
+        var displayTweet = function (tweet) {
+            $('<div>').text('@' + tweet.user + ': ' + tweet.message)
+                .addClass('tweet')
+                .prependTo($('body'));
+        };
+
+        var getNewTweets = function () {
+            var result = streams.home.slice();
+            archive(streams.home); // Clear tweet stream, but don't delete old tweets.
+            return result;
+        };
+
+        var archive = function (array_to_archive) {
+            streams.archive.push.apply(streams.archive,
+                    streams.home.splice(0, streams.home.length));
+        };
+
+        var setup = function () {
+            streams.archive = [];
+        };
+
+        $(document).ready(function () {
+            $('body').html('');
+            setInterval(refreshTweets, 500);
+            setup();
+        });
     </script>
   </body>
 </html>
